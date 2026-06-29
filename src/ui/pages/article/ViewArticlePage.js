@@ -19,6 +19,11 @@ export class ViewArticlePage extends BasePage {
         name: 'Unfavorite Article',
       })
       .last();
+    this.commentField = page.getByPlaceholder('Write a comment...');
+    this.postCommentButton = page.getByRole('button', { name: 'Post Comment' });
+    this.deleteCommentButtons = page.getByRole('button', {
+      name: 'Delete Comment',
+    });
   }
 
   tagListItem(tagName) {
@@ -53,6 +58,41 @@ export class ViewArticlePage extends BasePage {
       `Assert the Favorite article button is shown in article body`,
       async () => {
         await expect(this.articleFavoriteButton).toBeVisible();
+      },
+    );
+  }
+
+  async addCommentAndWaitForRequest(commentText) {
+    return await this.step(
+      `Add a comment and wait for request`,
+      async () => {
+        const requestPromise = this.page.waitForRequest(
+          /\/api\/articles\/.+\/comments$/,
+        );
+
+        await this.commentField.fill(commentText);
+        await this.postCommentButton.click();
+
+        await this.page.getByText(commentText).first().waitFor({ state: 'visible' });
+
+        return await requestPromise;
+      },
+    );
+  }
+
+  async deleteCommentAndWaitForRequest(commentText) {
+    return await this.step(
+      `Delete a comment and wait for request`,
+      async () => {
+        await this.page.getByText(commentText).first().waitFor({ state: 'visible' });
+
+        const requestPromise = this.page.waitForRequest(
+          /\/api\/articles\/.+\/comments\/.+$/,
+        );
+
+        await this.deleteCommentButtons.first().click();
+
+        return await requestPromise;
       },
     );
   }

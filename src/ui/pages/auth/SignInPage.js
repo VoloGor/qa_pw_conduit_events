@@ -1,5 +1,6 @@
 import { expect } from '../../../common/helpers/pw';
 import { BasePage } from '../BasePage';
+import { ROUTES } from '../../../api/constants/apiRoutes';
 export class SignInPage extends BasePage {
   constructor(page, userId = 0) {
     super(page, userId);
@@ -26,6 +27,19 @@ export class SignInPage extends BasePage {
     await this.step(`Click the 'Sign in' button`, async () => {
       await this.signInButton.click();
     });
+  }
+
+  async clickSignInButtonAndWaitForRequest() {
+    return await this.step(
+      `Click the 'Sign in' button and wait for request `,
+      async () => {
+        const requestPromise = this.page.waitForRequest(ROUTES.users.login);
+
+        await this.signInButton.click();
+
+        return await requestPromise;
+      },
+    );
   }
 
   async assertErrorMessageContainsText(messageText) {
