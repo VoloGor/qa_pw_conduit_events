@@ -33,7 +33,9 @@ export class SignInPage extends BasePage {
     return await this.step(
       `Click the 'Sign in' button and wait for request `,
       async () => {
-        const requestPromise = this.page.waitForRequest(ROUTES.users.login);
+        const requestPromise = this.page.waitForRequest(
+          request => new URL(request.url()).pathname === ROUTES.users.login,
+        );
 
         await this.signInButton.click();
 

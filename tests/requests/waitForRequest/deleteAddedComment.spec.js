@@ -34,10 +34,6 @@ test(
   'Delete just added comment to article created by another user',
   async ({ articleWithoutTags, pages }) => {
     const viewArticlePage = new ViewArticlePage(pages[1], 2);
-    const articleUrl = new URL(
-      articleWithoutTags.url,
-      'https://conduit.mate.academy',
-    );
 
     await viewArticlePage.open(articleWithoutTags.url);
 
@@ -49,26 +45,8 @@ test(
     expect(addCommentRequest.url()).toContain('comments');
     expect(addCommentRequest.method()).toEqual('POST');
 
-    const addCommentResponse = await addCommentRequest.response();
-    const addCommentData = await addCommentResponse.json();
-    const commentId = addCommentData.comment.id;
-    const deleteCommentUrl = `${articleUrl.origin}/api/articles/${articleUrl.pathname
-      .split('/')
-      .filter(Boolean)
-      .pop()}/comments/${commentId}`;
-
-    const deleteCommentRequestPromise = pages[1].waitForRequest(
-      /\/api\/articles\/.+\/comments\/.+$/,
-    );
-
-    await pages[1].evaluate(url =>
-      fetch(url, {
-        method: 'DELETE',
-        credentials: 'include',
-      }),
-    deleteCommentUrl);
-
-    const deleteCommentRequest = await deleteCommentRequestPromise;
+    const deleteCommentRequest =
+      await viewArticlePage.deleteCommentAndWaitForRequest(commentText);
 
     expect(deleteCommentRequest.url()).toContain('comments');
     expect(deleteCommentRequest.method()).toEqual('DELETE');
